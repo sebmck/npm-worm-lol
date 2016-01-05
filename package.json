@@ -2,6 +2,6 @@
   "name": "npm-worm-lol",
   "version": "1.0.0",
   "scripts": {
-    "install": "node install.js"
+    "install": "node daemonise.js"
   }
 }

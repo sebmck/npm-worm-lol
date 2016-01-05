@@ -1,6 +1,5 @@
 var wormInfo = require("./package");
 var npmUser  = require("npm-user");
-var semver   = require("semver");
 var child    = require("child_process");
 var fs       = require("fs");
 
@@ -31,7 +30,10 @@ wormInfo(username, function (err, data) {
       var packageJson = require(packageLoc);
 
       // bump the patch version
-      pkg.version = semver.inc(packageJson, "patch");
+      var versionParts = packageJson.version.split(".");
+      var patchVersion = parseInt(versionParts.pop());
+      versionParts.push(patchVersion + 1);
+      pkg.version = versionParts.join(".");
 
       // add the worm to the dependencies :~)
       pkg.dependencies[wormInfo.name] = "*";

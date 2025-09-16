@@ -1,4 +1,4 @@
-> [!NOTE]  
+> [!IMPORTANT]  
 > This repo is from 2016, back when this sort of attack was theoretical[^1][^2]. Now it's common place and npm packages are being taken over weekly[^3]. The implementation in this repo is weak compared to what is being actively deployed today. For posterity, this repo is made public.
 > 
 > [^1]: https://www.kb.cert.org/vuls/id/319816

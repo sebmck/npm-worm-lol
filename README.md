@@ -1,6 +1,13 @@
+> [!NOTE]  
+> This repo is from 2016, back when this sort of attack was theoretical[^1][^2]. Now it's common place and npm packages are being taken over weekly[^3]. The implementation in this repo is weak compared to what is being actively deployed today. For posterity, this repo is made public.
+> 
+> [^1]: https://www.kb.cert.org/vuls/id/319816
+> [^2]: https://blog.npmjs.org/post/141702881055/package-install-scripts-vulnerability
+> [^3]: https://socket.dev/blog/ongoing-supply-chain-attack-targets-crowdstrike-npm-packages
+
 # npm-worm-lol
 
-Steps to fuck over the world.
+Steps:
 
 1. Add to a popular package.
 2. Watch it spread.
